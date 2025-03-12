@@ -1,0 +1,86 @@
+definitions:
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.GuessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        example: admin
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  handlers.LoginResponse:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /guess/{guess}:
+    post:
+      description: User guesses a hidden number. If correct, regenerates a new number.
+      parameters:
+      - description: Guess value
+        in: path
+        name: guess
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Incorrect guess, try again.
+          schema:
+            $ref: '#/definitions/handlers.GuessResponse'
+        "201":
+          description: Correct guess! New number generated.
+          schema:
+            $ref: '#/definitions/handlers.GuessResponse'
+        "400":
+          description: Invalid guess
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Guess a number
+      tags:
+      - game
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates user and sets a token in the cookie
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: '#/definitions/handlers.LoginResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Login
+      tags:
+      - auth
+swagger: "2.0"
