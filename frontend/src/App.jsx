@@ -1,26 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import Cookies from "js-cookie";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guess, setGuess] = useState("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
-  const handleAuth = () => setIsAuthenticated(!isAuthenticated);
-  const handleGuess = () => alert(`Your guess: ${guess}`);
+  useEffect(() => {
+    const token = Cookies.get("authToken");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleAuth = () => {
+    if (isAuthenticated) {
+      Cookies.remove("authToken");
+      setIsAuthenticated(false);
+    } else {
+      setIsLoginModalOpen(true);
+      setLoginError("");
+    }
+  };
+
+  const handleLogin = () => {
+    if (username === "user" && password === "password") {
+      Cookies.set("authToken", "your_token_value", {expires: 7});
+      setIsAuthenticated(true);
+      setIsLoginModalOpen(false);
+    } else {
+      setLoginError("Invalid username or password. Please try again.");
+    }
+  };
+
+  const handleGuess = () => {
+    if (isAuthenticated) {
+      alert(`Your guess: ${guess}`);
+    } else {
+      alert("You must log in to play the game.");
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-neutral-800 text-white dark">
@@ -29,14 +57,11 @@ export default function App() {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarImage src="/path/to/avatar.jpg" alt="User Avatar" />
+                <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-card text-card-foreground"
-            >
+            <DropdownMenuContent align="end" className="bg-card text-card-foreground">
               <DropdownMenuItem onClick={handleAuth}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -62,6 +87,40 @@ export default function App() {
           <Button onClick={handleGuess}>Submit Guess</Button>
         </CardFooter>
       </Card>
+
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogTrigger />
+        <DialogContent className="bg-card text-card-foreground p-8 rounded-lg w-full max-w-md">
+          <DialogHeader>
+            <DialogTitle>Login</DialogTitle>
+            <DialogDescription className={loginError ? "text-red-500" : ""}>
+              {loginError ? loginError : "Enter your username and password to log in."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <Input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleLogin}>Login</Button>
+            <Button variant="outline" onClick={() => setIsLoginModalOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
