@@ -49,8 +49,8 @@ func main() {
 	app.Post("/users/login", userHandler.Login)
 	app.Post("/users", userHandler.CreateUser)
 	app.Get("/users/:id", userHandler.GetUser)
-	app.Put("/users/:id", userHandler.UpdateUser)
-	app.Delete("/users/:id", userHandler.DeleteUser)
+	app.Put("/users", userHandler.UpdateUser)
+	app.Delete("/users", userHandler.DeleteUser)
 	app.Get("/users", userHandler.GetAllUsers)
 
 	// Start the server

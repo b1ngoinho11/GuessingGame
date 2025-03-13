@@ -24,7 +24,7 @@ type UserHandler struct {
 // @Success 200 {object} models.LoginResponse "Login successful"
 // @Failure 400 {object} models.ErrorResponse "Invalid input"
 // @Failure 401 {object} models.ErrorResponse "Invalid credentials"
-// @Router /login [post]
+// @Router /users/login [post]
 func (h *UserHandler) Login(c *fiber.Ctx) error {
 	log.Println("[USER][API] POST /login - Login request")
 
@@ -45,7 +45,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// Generate token
-	token, err := utils.GenerateToken(username)
+	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
 		log.Println("[USER][ERROR] Failed to generate token:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
@@ -125,15 +125,27 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path string true "User ID"
 // @Param request body models.UserRequest true "User request"
 // @Success 200 {object} models.User "User updated"
 // @Failure 400 {object} models.ErrorResponse "Invalid input"
 // @Failure 404 {object} models.ErrorResponse "User not found"
-// @Router /users/{id} [put]
+// @Router /users [put]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	log.Println("[USER][API] PUT /users/" + id + " - Updating user")
+	// Get the token from cookies
+	token := c.Cookies("token")
+	if token == "" {
+		log.Println("[USER][ERROR] No token found in cookies")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	// Decode the token to get the user ID (you'll need to implement this depending on your token structure)
+	id, err := utils.DecodeToken(token) // Implement this function
+	if err != nil {
+		log.Println("[USER][ERROR] Failed to decode token:", err)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	log.Println("[USER][API] PUT /users - Updating user ID:", id)
 
 	// Retrieve user from ID
 	var user models.User
@@ -149,10 +161,17 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	// Update fields
-	if updateData.Username != "" {
+	// Check valid username
+	if updateData.Username != "" && updateData.Username != user.Username {
+		var existingUser models.User
+		if err := h.DB.Where("username = ?", updateData.Username).First(&existingUser).Error; err == nil {
+			log.Println("[USER][ERROR] Username already exists:", updateData.Username)
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Username already exists"})
+		}
 		user.Username = updateData.Username
 	}
+
+	// Update password
 	if updateData.Password != "" {
 		user.Password = updateData.Password
 	}
@@ -168,13 +187,25 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path string true "User ID"
 // @Success 200 {object} models.ErrorResponse "User deleted"
 // @Failure 500 {object} models.ErrorResponse "Failed to delete user"
-// @Router /users/{id} [delete]
+// @Router /users [delete]
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	log.Println("[USER][API] DELETE /users/" + id + " - Deleting user")
+	// Get the token from cookies
+	token := c.Cookies("token")
+	if token == "" {
+		log.Println("[USER][ERROR] No token found in cookies")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	// Decode the token to get the user ID
+	id, err := utils.DecodeToken(token)
+	if err != nil {
+		log.Println("[USER][ERROR] Failed to decode token:", err)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	log.Println("[USER][API] DELETE /users - Deleting user ID:", id)
 
 	// Delete user from ID
 	if err := h.DB.Delete(&models.User{}, id).Error; err != nil {
@@ -183,7 +214,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	}
 
 	log.Println("[USER][INFO] User deleted successfully:", id)
-	return c.JSON(fiber.Map{"message": "UserID:" + id + " deleted"})
+	return c.JSON(fiber.Map{"message": "UserID:" + fmt.Sprint(id) + " deleted"})
 }
 
 // @Summary Get All Users
