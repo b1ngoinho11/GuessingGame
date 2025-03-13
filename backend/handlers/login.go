@@ -19,7 +19,7 @@ import (
 // @Failure 401 {object} ErrorResponse "Invalid credentials"
 // @Router /login [post]
 func Login(c *fiber.Ctx) error {
-	log.Println("[AUTH] POST /login - Incoming request")
+	log.Println("[AUTH][API] POST /login - Incoming request")
 	var body map[string]string
 	if err := c.BodyParser(&body); err != nil {
 		log.Println("[AUTH][ERROR] Failed to parse request body:", err)
@@ -49,9 +49,9 @@ func Login(c *fiber.Ctx) error {
 			Name:     "token",
 			Value:    token,
 			Expires:  time.Now().Add(time.Hour * 24),
-			HTTPOnly: true,
+			HTTPOnly: false,
 			Secure:   true,
-			SameSite: "Strict",
+			SameSite: "None",
 		})
 
 		// Return successful JSON
@@ -61,7 +61,7 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	log.Println("[AUTH][WARNING] Failed login attempt for username:", username)
+	log.Println("[AUTH][INFO] Failed login attempt for username:", username)
 
 	// Return invalid
 	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{

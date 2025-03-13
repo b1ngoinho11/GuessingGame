@@ -28,7 +28,7 @@ func init() {
 // @Failure 400 {object} ErrorResponse "Invalid guess"
 // @Router /guess/{guess} [post]
 func Guess(c *fiber.Ctx) error {
-	log.Println("[GAME] POST /guess - Incoming request")
+	log.Println("[GAME][API] POST /guess - Incoming request")
 
 	// Parse the guess parameter
 	guessStr := c.Params("guess")
@@ -47,7 +47,7 @@ func Guess(c *fiber.Ctx) error {
 		log.Println("[GAME][INFO] Correct guess")
 
 		// Generate a new hidden number
-		hiddenNumber = rand.Intn(100)
+		hiddenNumber = rand.Intn(10)
 		log.Println("[GAME][INFO] New hidden number generated:", hiddenNumber)
 
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
