@@ -20,6 +20,8 @@ import (
 // @Router /login [post]
 func Login(c *fiber.Ctx) error {
 	log.Println("[AUTH][API] POST /login - Incoming request")
+
+	// Parse request body
 	var body map[string]string
 	if err := c.BodyParser(&body); err != nil {
 		log.Println("[AUTH][ERROR] Failed to parse request body:", err)
@@ -32,39 +34,38 @@ func Login(c *fiber.Ctx) error {
 	log.Println("[AUTH][INFO] Login attempt for username:", username)
 
 	// Validate username and password
-	if username == "admin" && password == "admin" {
-		// Generate token
-		token, err := utils.GenerateToken(username)
-		if err != nil {
-			log.Println("[AUTH][ERROR] Failed to generate token:", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to generate token",
-			})
-		}
+	if username != "admin" || password != "admin" {
+		log.Println("[AUTH][INFO] Failed login attempt for username:", username)
 
-		log.Println("[AUTH][INFO] Token generated for user:", username)
-
-		// Set the token as a cookie
-		c.Cookie(&fiber.Cookie{
-			Name:     "token",
-			Value:    token,
-			Expires:  time.Now().Add(time.Hour * 24),
-			HTTPOnly: false,
-			Secure:   true,
-			SameSite: "None",
-		})
-
-		// Return successful JSON
-		log.Println("[AUTH][INFO] Login successful for user:", username)
-		return c.JSON(fiber.Map{
-			"message": "Login successful",
+		// Return invalid
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid credentials",
 		})
 	}
 
-	log.Println("[AUTH][INFO] Failed login attempt for username:", username)
+	// Generate token
+	token, err := utils.GenerateToken(username)
+	if err != nil {
+		log.Println("[AUTH][ERROR] Failed to generate token:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate token",
+		})
+	}
+	log.Println("[AUTH][INFO] Token generated for user:", username)
 
-	// Return invalid
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-		"error": "Invalid credentials",
+	// Set the token as a cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HTTPOnly: false,
+		Secure:   true,
+		SameSite: "None",
+	})
+
+	// Return successful JSON
+	log.Println("[AUTH][INFO] Login successful for user:", username)
+	return c.JSON(fiber.Map{
+		"message": "Login successful",
 	})
 }

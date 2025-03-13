@@ -54,7 +54,6 @@ export default function App() {
       setIsAuthenticated(false);
     } else {
       setIsLoginModalOpen(true);
-      setLoginError("");
     }
   };
 
@@ -79,7 +78,7 @@ export default function App() {
         setPassword("");
       } else {
         const errorData = await response.json();
-        setLoginError("Login failed. Please try again");
+        setLoginError(errorData);
       }
     } catch (error) {
       setLoginError("An error occurred. Please try again.");

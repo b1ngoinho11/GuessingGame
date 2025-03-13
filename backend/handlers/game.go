@@ -9,11 +9,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// Initialize the random number on program start
 var hiddenNumber int
 
 func init() {
-	rand.Seed(time.Now().UnixNano()) // Ensure different random values each run
+	rand.Seed(time.Now().UnixNano())
 	hiddenNumber = rand.Intn(10)
 	log.Println("[INIT] Hidden number initialized:", hiddenNumber)
 }
@@ -42,21 +41,20 @@ func Guess(c *fiber.Ctx) error {
 
 	log.Println("[GAME][INFO] User guessed:", guess)
 
-	// Check if the guess is correct
-	if guess == hiddenNumber {
-		log.Println("[GAME][INFO] Correct guess")
-
-		// Generate a new hidden number
-		hiddenNumber = rand.Intn(10)
-		log.Println("[GAME][INFO] New hidden number generated:", hiddenNumber)
-
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"message": "Correct guess! New number generated.",
+	// Check if the guess is incorrect
+	if guess != hiddenNumber {
+		log.Println("[GAME][INFO] Incorrect guess")
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "Incorrect guess, try again.",
 		})
 	}
 
-	log.Println("[GAME][INFO] Incorrect guess")
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Incorrect guess, try again.",
+	// Generate a new hidden number
+	hiddenNumber = rand.Intn(10)
+	log.Println("[GAME][INFO] New hidden number generated:", hiddenNumber)
+
+	log.Println("[GAME][INFO] Correct guess")
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Correct guess! New number generated.",
 	})
 }

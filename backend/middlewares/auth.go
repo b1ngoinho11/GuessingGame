@@ -8,6 +8,7 @@ import (
 )
 
 func AuthMiddleware(c *fiber.Ctx) error {
+	// Retrieve token from cookie
 	token := c.Cookies("token")
 	if token == "" {
 		log.Println("[MIDDLEWARE][ERROR] Unauthorized - Missing Token")

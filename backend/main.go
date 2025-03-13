@@ -25,10 +25,12 @@ func main() {
 	// Swagger Route
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
+	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
 
+	// API Route
 	app.Post("/login", handlers.Login)
 	app.Post("/guess/:guess", middlewares.AuthMiddleware, handlers.Guess)
 
