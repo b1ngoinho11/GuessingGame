@@ -31,7 +31,7 @@ func main() {
 
 	// Enable CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://127.0.0.1:5000/",
+		AllowOrigins:     "http://127.0.0.1:8080/",
 		AllowMethods:     "GET,POST,PUT,DELETE",
 		AllowCredentials: true,
 	}))

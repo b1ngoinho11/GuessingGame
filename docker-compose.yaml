@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "127.0.0.1:8080:80"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./backend/database:/root/database
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
