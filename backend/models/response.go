@@ -1,9 +1,4 @@
-package handlers
-
-type LoginRequest struct {
-	Username string `json:"username" example:"admin"`
-	Password string `json:"password" example:"admin"`
-}
+package models
 
 type LoginResponse struct {
 	Message string `json:"message"`

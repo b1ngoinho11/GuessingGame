@@ -30,9 +30,11 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guess, setGuess] = useState("");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [signupError, setSignupError] = useState("");
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [messageContent, setMessageContent] = useState("");
 
@@ -59,7 +61,7 @@ export default function App() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:3000/login", {
+      const response = await fetch("http://127.0.0.1:3000/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +72,7 @@ export default function App() {
         }),
         credentials: "include",
       });
-  
+
       if (response.ok) {
         setIsAuthenticated(true);
         setIsLoginModalOpen(false);
@@ -78,11 +80,40 @@ export default function App() {
         setPassword("");
       } else {
         const errorData = await response.json();
-        setLoginError(errorData);
+        setLoginError(errorData.error);
+        setPassword("");
       }
     } catch (error) {
       setLoginError("An error occurred. Please try again.");
       console.error("Login error:", error);
+    }
+  };
+
+  const handleSignup = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:3000/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        }),
+      });
+
+      if (response.ok) {
+        showMessageModal("Signup successful! You can now log in.");
+        setIsSignupModalOpen(false);
+        setUsername("");
+        setPassword("");
+      } else {
+        const errorData = await response.json();
+        setSignupError(errorData.error);
+      }
+    } catch (error) {
+      setSignupError("An error occurred. Please try again.");
+      console.error("Signup error:", error);
     }
   };
 
@@ -95,7 +126,7 @@ export default function App() {
           setIsAuthenticated(false);
           return;
         }
-        
+
         const response = await fetch(`http://127.0.0.1:3000/guess/${guess}`, {
           method: "POST",
           headers: {
@@ -103,13 +134,13 @@ export default function App() {
           },
           credentials: "include",
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           showMessageModal(data.message);
         } else {
           const errorData = await response.json();
-          
+
           if (response.status === 401) {
             showMessageModal("Your session has expired. Please log in again.");
             setIsAuthenticated(false);
@@ -145,7 +176,12 @@ export default function App() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
+          <div>
           <Button onClick={handleAuth}>Login</Button>
+          <Button onClick={() => setIsSignupModalOpen(true)} className="ml-2">
+            Signup
+          </Button>
+        </div>
         )}
       </div>
 
@@ -202,6 +238,43 @@ export default function App() {
             <Button
               variant="outline"
               onClick={() => setIsLoginModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSignupModalOpen} onOpenChange={setIsSignupModalOpen}>
+        <DialogTrigger />
+        <DialogContent className="bg-card text-card-foreground p-8 rounded-lg w-full max-w-md">
+          <DialogHeader>
+            <DialogTitle>Signup</DialogTitle>
+            <DialogDescription className={signupError ? "text-red-500" : ""}>
+              {signupError ? signupError : "Create a new account."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <Input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSignup}>Signup</Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsSignupModalOpen(false)}
             >
               Cancel
             </Button>

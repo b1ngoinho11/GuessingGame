@@ -14,7 +14,7 @@ var hiddenNumber int
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	hiddenNumber = rand.Intn(10)
-	log.Println("[INIT] Hidden number initialized:", hiddenNumber)
+	log.Println("[INIT][INFO] Hidden number initialized:", hiddenNumber)
 }
 
 // @Summary Guess a number
@@ -22,9 +22,9 @@ func init() {
 // @Tags game
 // @Produce json
 // @Param guess path int true "Guess value"
-// @Success 201 {object} GuessResponse "Correct guess! New number generated."
-// @Success 200 {object} GuessResponse "Incorrect guess, try again."
-// @Failure 400 {object} ErrorResponse "Invalid guess"
+// @Success 201 {object} models.GuessResponse "Correct guess! New number generated."
+// @Success 200 {object} models.GuessResponse "Incorrect guess, try again."
+// @Failure 400 {object} models.ErrorResponse "Invalid guess"
 // @Router /guess/{guess} [post]
 func Guess(c *fiber.Ctx) error {
 	log.Println("[GAME][API] POST /guess - Incoming request")
