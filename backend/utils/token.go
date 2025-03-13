@@ -27,6 +27,7 @@ func ValidateToken(tokenString string) error {
 		return secretKey, nil
 	})
 
+	// Return if error
 	if err != nil {
 		return err
 	}
@@ -46,6 +47,8 @@ func DecodeToken(tokenString string) (uint, error) {
 		}
 		return secretKey, nil
 	})
+
+	// Return if error
 	if err != nil || !token.Valid {
 		return 0, errors.New("invalid or expired token")
 	}

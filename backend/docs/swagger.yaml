@@ -65,7 +65,7 @@ paths:
             $ref: '#/definitions/models.ErrorResponse'
       summary: Guess a number
       tags:
-      - game
+      - guess
   /users:
     delete:
       consumes:

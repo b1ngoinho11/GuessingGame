@@ -22,6 +22,7 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 	log.Println("[INIT][INFO] Connected to the database")
+
 	db.AutoMigrate(&models.User{})
 
 	userHandler := handlers.UserHandler{DB: db}
@@ -43,15 +44,22 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	// API Route
-	app.Post("/guess/:guess", middlewares.AuthMiddleware, handlers.Guess)
+	// User API Route
+	userRoutes := app.Group("/users")
+	{
+		userRoutes.Post("/login", userHandler.Login)                              // Login user
+		userRoutes.Post("", userHandler.CreateUser)                               // Create user
+		userRoutes.Get("", userHandler.GetAllUsers)                               // Get all users
+		userRoutes.Get("/:id", userHandler.GetUser)                               // Get user by ID
+		userRoutes.Put("", middlewares.AuthMiddleware, userHandler.UpdateUser)    // Update user
+		userRoutes.Delete("", middlewares.AuthMiddleware, userHandler.DeleteUser) // Delete user
+	}
 
-	app.Post("/users/login", userHandler.Login)
-	app.Post("/users", userHandler.CreateUser)
-	app.Get("/users", userHandler.GetAllUsers)
-	app.Get("/users/:id", userHandler.GetUser)
-	app.Put("/users", middlewares.AuthMiddleware, userHandler.UpdateUser)
-	app.Delete("/users", middlewares.AuthMiddleware, userHandler.DeleteUser)
+	// Guess API Route
+	guessRoutes := app.Group("/guess")
+	{
+		guessRoutes.Post("/:guess", middlewares.AuthMiddleware, handlers.Guess) // Make a guess
+	}
 
 	// Start the server
 	log.Fatal(app.Listen(":3000"))

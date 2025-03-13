@@ -149,7 +149,7 @@ export default function App() {
         showMessageModal("Your account has been deleted successfully.");
       } else {
         const errorData = await response.json();
-        showMessageModal(errorData.error || "Failed to delete the account.");
+        showMessageModal(errorData.error);
       }
     } catch (error) {
       showMessageModal("An error occurred. Please try again.");
@@ -158,6 +158,11 @@ export default function App() {
   };
 
   const handleChange = async () => {
+    if (newPassword === "" || confirmPassword === "" || newUsername === "" ){
+      setChangeError("Invalid input");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setChangeError("Passwords do not match.");
       return;
@@ -226,7 +231,7 @@ export default function App() {
             showMessageModal("Your session has expired. Please log in again.");
             setIsAuthenticated(false);
           } else {
-            showMessageModal(errorData.error || "Something went wrong.");
+            showMessageModal(errorData.error);
           }
         }
       } catch (error) {

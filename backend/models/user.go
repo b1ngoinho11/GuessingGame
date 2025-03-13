@@ -5,10 +5,9 @@ import (
 )
 
 type User struct {
-	ID        uint       `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	Username  string     `json:"username" gorm:"unique;not null"`
-	Password  string     `json:"password"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Username  string    `json:"username" gorm:"unique;not null"`
+	Password  string    `json:"password"`
 }

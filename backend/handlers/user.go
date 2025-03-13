@@ -106,10 +106,11 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 // @Failure 404 {object} models.ErrorResponse "User not found"
 // @Router /users/{id} [get]
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	log.Println("[USER][API] GET /users/" + id + " - Fetching user")
+	log.Println("[USER][API] GET /users/ - Retrieving user")
 
-	// Find user from ID
+	id := c.Params("id")
+
+	// Retrieve user from ID
 	var user models.User
 	if err := h.DB.First(&user, id).Error; err != nil {
 		log.Println("[USER][ERROR] User not found:", id)
@@ -131,21 +132,21 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 // @Failure 404 {object} models.ErrorResponse "User not found"
 // @Router /users [put]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
-	// Get the token from cookies
+	log.Println("[USER][API] PUT /users - Updating user")
+
+	// Get the token from cookie
 	token := c.Cookies("token")
 	if token == "" {
 		log.Println("[USER][ERROR] No token found in cookies")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	// Decode the token to get the user ID (you'll need to implement this depending on your token structure)
-	id, err := utils.DecodeToken(token) // Implement this function
+	// Decode the token to get the user ID
+	id, err := utils.DecodeToken(token)
 	if err != nil {
 		log.Println("[USER][ERROR] Failed to decode token:", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
-	log.Println("[USER][API] PUT /users - Updating user ID:", id)
 
 	// Retrieve user from ID
 	var user models.User
@@ -191,7 +192,9 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 // @Failure 500 {object} models.ErrorResponse "Failed to delete user"
 // @Router /users [delete]
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
-	// Get the token from cookies
+	log.Println("[USER][API] DELETE /users - Deleting user")
+
+	// Get the token from cookie
 	token := c.Cookies("token")
 	if token == "" {
 		log.Println("[USER][ERROR] No token found in cookies")
@@ -204,8 +207,6 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 		log.Println("[USER][ERROR] Failed to decode token:", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
-	log.Println("[USER][API] DELETE /users - Deleting user ID:", id)
 
 	// Delete user from ID
 	if err := h.DB.Delete(&models.User{}, id).Error; err != nil {
@@ -226,7 +227,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 // @Failure 500 {object} models.ErrorResponse "Failed to fetch users"
 // @Router /users [get]
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
-	log.Println("[USER][API] GET /users - Fetching all users")
+	log.Println("[USER][API] GET /users - Retrieving all users")
 
 	// Retrieve all users
 	var users []models.User

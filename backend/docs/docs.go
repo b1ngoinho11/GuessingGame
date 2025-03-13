@@ -22,7 +22,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "game"
+                    "guess"
                 ],
                 "summary": "Guess a number",
                 "parameters": [
