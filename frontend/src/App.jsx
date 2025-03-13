@@ -27,14 +27,23 @@ import {
 import Cookies from "js-cookie";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guess, setGuess] = useState("");
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loginError, setLoginError] = useState("");
   const [signupError, setSignupError] = useState("");
+  const [changeError, setChangeError] = useState("");
+
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [messageContent, setMessageContent] = useState("");
 
@@ -117,6 +126,78 @@ export default function App() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const token = Cookies.get("token");
+
+    if (!token) {
+      showMessageModal("You must be logged in to delete your account.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:3000/users", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        Cookies.remove("token");
+        setIsAuthenticated(false);
+        showMessageModal("Your account has been deleted successfully.");
+      } else {
+        const errorData = await response.json();
+        showMessageModal(errorData.error || "Failed to delete the account.");
+      }
+    } catch (error) {
+      showMessageModal("An error occurred. Please try again.");
+      console.error("Delete account error:", error);
+    }
+  };
+
+  const handleChange = async () => {
+    if (newPassword !== confirmPassword) {
+      setChangeError("Passwords do not match.");
+      return;
+    }
+
+    const token = Cookies.get("token");
+    if (!token) {
+      setChangeError("You must be logged in to update your account.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:3000/users", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: newUsername,
+          password: newPassword,
+        }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        showMessageModal("Your account has been updated successfully.");
+        setIsChangeModalOpen(false);
+        setNewUsername("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        const errorData = await response.json();
+        setChangeError(errorData.error);
+      }
+    } catch (error) {
+      setChangeError("An error occurred. Please try again.");
+      console.error("Update account error:", error);
+    }
+  };
+
   const handleGuess = async () => {
     if (isAuthenticated) {
       try {
@@ -172,16 +253,24 @@ export default function App() {
               align="end"
               className="bg-card text-card-foreground"
             >
-              <DropdownMenuItem onClick={handleAuth}>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsChangeModalOpen(true)}>
+                Change Username/Password
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDeleteAccount}>
+                Delete Account
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAuth}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <div>
-          <Button onClick={handleAuth}>Login</Button>
-          <Button onClick={() => setIsSignupModalOpen(true)} className="ml-2">
-            Signup
-          </Button>
-        </div>
+            <Button onClick={handleAuth}>Login</Button>
+            <Button onClick={() => setIsSignupModalOpen(true)} className="ml-2">
+              Signup
+            </Button>
+          </div>
         )}
       </div>
 
@@ -275,6 +364,52 @@ export default function App() {
             <Button
               variant="outline"
               onClick={() => setIsSignupModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isChangeModalOpen} onOpenChange={setIsChangeModalOpen}>
+        <DialogTrigger />
+        <DialogContent className="bg-card text-card-foreground p-8 rounded-lg w-full max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Username and Password</DialogTitle>
+            <DialogDescription className={changeError ? "text-red-500" : ""}>
+              {changeError
+                ? changeError
+                : "Update your username and/or password."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <Input
+              type="text"
+              placeholder="New Username"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+            <Input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+            <Input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="bg-input text-input-foreground"
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleChange}>Save Changes</Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsChangeModalOpen(false)}
             >
               Cancel
             </Button>

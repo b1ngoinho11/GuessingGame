@@ -48,10 +48,10 @@ func main() {
 
 	app.Post("/users/login", userHandler.Login)
 	app.Post("/users", userHandler.CreateUser)
-	app.Get("/users/:id", userHandler.GetUser)
-	app.Put("/users", userHandler.UpdateUser)
-	app.Delete("/users", userHandler.DeleteUser)
 	app.Get("/users", userHandler.GetAllUsers)
+	app.Get("/users/:id", userHandler.GetUser)
+	app.Put("/users", middlewares.AuthMiddleware, userHandler.UpdateUser)
+	app.Delete("/users", middlewares.AuthMiddleware, userHandler.DeleteUser)
 
 	// Start the server
 	log.Fatal(app.Listen(":3000"))
