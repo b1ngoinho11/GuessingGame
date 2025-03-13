@@ -2,6 +2,9 @@
 
 ## Tech Stack
 
+- **Frontend**: 
+  - React with Vite
+  - shadcn/ui component library
 - **Backend**: Go with Fiber framework
 - **Database**: SQLite
 - **Documentation**: Swagger
